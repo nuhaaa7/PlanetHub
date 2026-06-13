@@ -27,12 +27,32 @@ planet_images = {
 st.markdown("""
 <style>
 
-.stApp {
-    background-color: #050816;
+.stApp{
+    background:
+    radial-gradient(circle at top,#001219,#000814,#000000);
+    color:#00ffff;
 }
 
-h1, h2, h3 {
-    color: #4FC3F7;
+.main-title{
+    text-align:center;
+    font-size:60px;
+    font-weight:bold;
+    color:#00ffff;
+    text-shadow:0px 0px 20px #00ffff;
+}
+
+.scanner-box{
+    background:#001d3d;
+    border:2px solid #00ffff;
+    border-radius:15px;
+    padding:20px;
+    margin-bottom:20px;
+    box-shadow:0px 0px 20px #00ffff;
+}
+
+.scanner-text{
+    color:#00ffff;
+    font-family:monospace;
 }
 
 </style>
@@ -45,7 +65,15 @@ df = pd.read_csv("nasa_clean.csv")
 
 # ---------------- TITLE ----------------
 
-st.title("🚀 NASA Exoplanet Intelligence System")
+st.markdown("""
+<div class="main-title">
+👽 EXOPLANET SCANNER SYSTEM
+</div>
+""", unsafe_allow_html=True)
+
+st.caption(
+"INTERSTELLAR RECONNAISSANCE NETWORK • PLANET ANALYSIS ENGINE"
+)
 
 st.write(
     "Analyze real exoplanets from NASA's Exoplanet Archive using Machine Learning."
@@ -69,7 +97,13 @@ temp = selected["st_teff"]
 
 # ---------------- ANALYZE ----------------
 
-if st.button("🛰 Analyze Planet"):
+if st.button("🛰 INITIATE PLANET SCAN"):
+    scan = st.progress(0)
+
+    for i in range(100):
+        scan.progress(i+1)
+
+    st.success("🎯 TARGET LOCK ACQUIRED")
 
     prediction = model.predict(
         [[radius, period, distance, temp]]
@@ -128,23 +162,42 @@ if st.button("🛰 Analyze Planet"):
         )
 
     st.progress(life_probability)
+    if life_probability >= 80:
+
+    st.success(
+        "👽 THREAT LEVEL: POSSIBLE ADVANCED LIFE"
+    )
+
+elif life_probability >= 50:
+
+    st.warning(
+        "🦠 THREAT LEVEL: MICROBIAL LIFE POSSIBLE"
+    )
+
+else:
+
+    st.error(
+        "☠ NO LIFE SIGNATURES DETECTED"
+    )
 
     # ---------------- RESULT ----------------
-
     if prediction == 1:
 
-        st.success(
-            "🌍 Potentially Habitable"
-        )
-
-        st.balloons()
+        st.markdown(f"""
+        <div class="scanner-box">
+        <h1>🟢 HABITABLE WORLD DETECTED</h1>
+        <h2>{planet}</h2>
+        </div>
+        """, unsafe_allow_html=True)
 
     else:
-
-        st.error(
-            "☄️ Not Habitable"
-        )
-
+    
+        st.markdown(f"""
+        <div class="scanner-box">
+        <h1>🔴 HOSTILE WORLD</h1>
+        <h2>{planet}</h2>
+        </div>
+        """, unsafe_allow_html=True)
     # ---------------- PLANET FACTS ----------------
 
     st.subheader("📊 NASA Planet Facts")
@@ -290,35 +343,23 @@ if st.button("🛰 Analyze Planet"):
 
     # ---------------- AI REPORT ----------------
 
-    st.subheader("🧠 AI Planet Report")
+    report = f"""
+TARGET: {planet}
 
-    if life_probability >= 80:
+HOST STAR: {selected['hostname']}
 
-        st.success(
-            f"""
-{planet} is one of the strongest candidates for habitability.
+MISSION STATUS:
+{'HABITABLE' if prediction == 1 else 'HOSTILE'}
 
-The planet exhibits Earth-like properties and may support liquid water.
+LIFE PROBABILITY:
+{life_probability}%
+
+SCANNER RECOMMENDATION:
+
+{'Priority candidate for future exploration missions.' if prediction == 1 else 'Low-priority exploration target.'}
 """
-        )
 
-    elif life_probability >= 50:
-
-        st.info(
-            f"""
-{planet} shows some promising characteristics for habitability.
-
-Further observations are required.
-"""
-        )
-
-    else:
-
-        st.warning(
-            f"""
-{planet} is unlikely to support life due to harsh environmental conditions.
-"""
-        )
+st.code(report)
 
     # ---------------- LIFE FORMS ----------------
 
