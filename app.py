@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import joblib
+import matplotlib.pyplot as plt
 
 # ---------------- PAGE SETTINGS ----------------
 planet_images = {
@@ -81,6 +82,11 @@ if st.button("🛰 Analyze Planet"):
     # ---------------- HEADER ----------------
 
     st.header(f"🪐 {planet}")
+    if planet in planet_images:
+    st.image(
+        planet_images[planet],
+        width=500
+    )
 
     # ---------------- METRICS ----------------
 
@@ -169,6 +175,43 @@ if st.button("🛰 Analyze Planet"):
         st.write(
             f"🕒 Orbital Period: {period:.1f} Days"
         )
+        st.subheader("🌍 Comparison With Earth")
+        comparison = pd.DataFrame({
+    "Property":[
+        "Radius",
+        "Distance From Star",
+        "Orbital Period"
+    ],
+    "Earth":[
+        1.0,
+        1.0,
+        365
+    ],
+    planet:[
+        round(radius,2),
+        round(distance,2),
+        round(period,1)
+    ]
+})
+
+st.dataframe(
+    comparison,
+    use_container_width=True
+)
+st.subheader("📈 Planet Radius Comparison")
+fig, ax = plt.subplots()
+
+ax.bar(
+    ["Earth", planet],
+    [1.0, radius]
+)
+
+ax.set_ylabel(
+    "Earth Radii"
+)
+
+st.pyplot(fig)
+        
 
     # ---------------- HABITABILITY REASONS ----------------
 
