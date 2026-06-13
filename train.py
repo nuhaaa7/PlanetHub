@@ -1,60 +1,44 @@
 import pandas as pd
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
 import joblib
 
-df = pd.read_csv("exoplanets.csv")
-
-df["habitable"] = (
-    (df["pl_orbsmax"] >= 0.8)
-    & (df["pl_orbsmax"] <= 1.5)
-    & (df["pl_rade"] <= 2)
-    & (df["st_teff"] >= 4500)
-    & (df["st_teff"] <= 6500)
-).astype(int)
+df = pd.read_csv("nasa_clean.csv")
 
 X = df[
     [
         "pl_rade",
         "pl_orbper",
-        "st_teff",
-        "pl_orbsmax"
-    ]
-]
-
-
-y = df["habitable"]
-
-model = RandomForestClassifier()
-
-import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
-import joblib
-
-df = pd.read_csv("exoplanets.csv")
-
-df["habitable"] = (
-    (df["pl_orbsmax"] >= 0.8)
-    & (df["pl_orbsmax"] <= 1.5)
-    & (df["pl_rade"] <= 2)
-    & (df["st_teff"] >= 4500)
-    & (df["st_teff"] <= 6500)
-).astype(int)
-
-X = df[
-    [
-        "pl_rade",
-        "pl_orbper",
-        "st_teff",
-        "pl_orbsmax"
+        "pl_orbsmax",
+        "st_teff"
     ]
 ]
 
 y = df["habitable"]
 
-model = RandomForestClassifier()
+X_train, X_test, y_train, y_test = train_test_split(
+    X,
+    y,
+    test_size=0.2,
+    random_state=42
+)
 
-model.fit(X, y)
+model = RandomForestClassifier(
+    n_estimators=200,
+    random_state=42
+)
 
-joblib.dump(model, "model.pkl")
+model.fit(X_train, y_train)
 
-print("Model Trained!")
+accuracy = model.score(X_test, y_test)
+
+print(
+    f"Accuracy: {accuracy:.2f}"
+)
+
+joblib.dump(
+    model,
+    "model.pkl"
+)
+
+print("Model saved!")
