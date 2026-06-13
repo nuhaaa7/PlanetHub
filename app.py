@@ -64,7 +64,7 @@ selected = df[df["pl_name"] == planet].iloc[0]
 
 radius = selected["pl_rade"]
 period = selected["pl_orbper"]
-distance = selected["pl_orbsmax"]
+distance = selected["pl_orbsma"]
 temp = selected["st_teff"]
 
 # ---------------- ANALYZE ----------------
