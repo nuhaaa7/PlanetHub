@@ -3,7 +3,14 @@ import pandas as pd
 import joblib
 
 # ---------------- PAGE SETTINGS ----------------
-
+planet_images = {
+    "Earth":"https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg",
+    "Mars":"https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg",
+    "Venus":"https://upload.wikimedia.org/wikipedia/commons/e/e5/Venus-real_color.jpg",
+    "Kepler-442 b":"https://upload.wikimedia.org/wikipedia/commons/5/58/Kepler-442b_artist_impression.jpg",
+    "Kepler-186 f":"https://upload.wikimedia.org/wikipedia/commons/4/46/PIA18034-Kepler186f.jpg",
+    "TRAPPIST-1 e":"https://upload.wikimedia.org/wikipedia/commons/d/d9/TRAPPIST-1e_artist_concept.jpg"
+}
 st.set_page_config(
     page_title="NASA Exoplanet Intelligence System",
     page_icon="🚀",
