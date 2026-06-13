@@ -92,7 +92,7 @@ selected = df[df["pl_name"] == planet].iloc[0]
 
 radius = selected["pl_rade"]
 period = selected["pl_orbper"]
-distance = selected["pl_orbsma"]
+distance = selected["pl_orbsmax"]
 temp = selected["st_teff"]
 
 # ---------------- ANALYZE ----------------
@@ -162,23 +162,25 @@ if st.button("🛰 INITIATE PLANET SCAN"):
         )
 
     st.progress(life_probability)
+
     if life_probability >= 80:
-
-    st.success(
-        "👽 THREAT LEVEL: POSSIBLE ADVANCED LIFE"
-    )
-
-elif life_probability >= 50:
-
-    st.warning(
-        "🦠 THREAT LEVEL: MICROBIAL LIFE POSSIBLE"
-    )
-
-else:
-
-    st.error(
-        "☠ NO LIFE SIGNATURES DETECTED"
-    )
+    
+        st.success(
+            "👽 THREAT LEVEL: POSSIBLE ADVANCED LIFE"
+        )
+    
+    elif life_probability >= 50:
+    
+        st.warning(
+            "🦠 THREAT LEVEL: MICROBIAL LIFE POSSIBLE"
+        )
+    
+    else:
+    
+        st.error(
+            "☠ NO LIFE SIGNATURES DETECTED"
+        )
+    
 
     # ---------------- RESULT ----------------
     if prediction == 1:
@@ -344,22 +346,21 @@ else:
     # ---------------- AI REPORT ----------------
 
     report = f"""
-TARGET: {planet}
-
-HOST STAR: {selected['hostname']}
-
-MISSION STATUS:
-{'HABITABLE' if prediction == 1 else 'HOSTILE'}
-
-LIFE PROBABILITY:
-{life_probability}%
-
-SCANNER RECOMMENDATION:
-
-{'Priority candidate for future exploration missions.' if prediction == 1 else 'Low-priority exploration target.'}
-"""
-
-st.code(report)
+    TARGET: {planet}
+    
+    HOST STAR: {selected['hostname']}
+    
+    MISSION STATUS:
+    {'HABITABLE' if prediction == 1 else 'HOSTILE'}
+    
+    LIFE PROBABILITY:
+    {life_probability}%
+    
+    SCANNER RECOMMENDATION:
+    
+    {'Priority candidate for future exploration missions.' if prediction == 1 else 'Low-priority exploration target.'}
+    """
+        st.code(report)
 
     # ---------------- LIFE FORMS ----------------
 
