@@ -3,7 +3,16 @@ import pandas as pd
 import joblib
 import matplotlib.pyplot as plt
 
-# ---------------- PAGE SETTINGS ----------------
+# ---------------- PAGE CONFIG ----------------
+
+st.set_page_config(
+    page_title="NASA Exoplanet Intelligence System",
+    page_icon="🚀",
+    layout="wide"
+)
+
+# ---------------- PLANET IMAGES ----------------
+
 planet_images = {
     "Earth":"https://upload.wikimedia.org/wikipedia/commons/9/97/The_Earth_seen_from_Apollo_17.jpg",
     "Mars":"https://upload.wikimedia.org/wikipedia/commons/0/02/OSIRIS_Mars_true_color.jpg",
@@ -12,33 +21,26 @@ planet_images = {
     "Kepler-186 f":"https://upload.wikimedia.org/wikipedia/commons/4/46/PIA18034-Kepler186f.jpg",
     "TRAPPIST-1 e":"https://upload.wikimedia.org/wikipedia/commons/d/d9/TRAPPIST-1e_artist_concept.jpg"
 }
-st.set_page_config(
-    page_title="NASA Exoplanet Intelligence System",
-    page_icon="🚀",
-    layout="wide"
-)
 
-# ---------------- CUSTOM STYLE ----------------
+# ---------------- STYLING ----------------
 
 st.markdown("""
 <style>
 
 .stApp {
     background-color: #050816;
-    color: white;
 }
 
-h1,h2,h3 {
+h1, h2, h3 {
     color: #4FC3F7;
 }
 
 </style>
 """, unsafe_allow_html=True)
 
-# ---------------- LOAD DATA ----------------
+# ---------------- LOAD MODEL & DATA ----------------
 
 model = joblib.load("model.pkl")
-
 df = pd.read_csv("nasa_clean.csv")
 
 # ---------------- TITLE ----------------
@@ -49,12 +51,12 @@ st.write(
     "Analyze real exoplanets from NASA's Exoplanet Archive using Machine Learning."
 )
 
-# ---------------- SEARCH ----------------
+# ---------------- PLANET SELECTION ----------------
 
 planet_names = sorted(df["pl_name"].unique())
 
 planet = st.selectbox(
-    "🔍 Search Planet",
+    "🔍 Select a Planet",
     planet_names
 )
 
@@ -65,7 +67,7 @@ period = selected["pl_orbper"]
 distance = selected["pl_orbsmax"]
 temp = selected["st_teff"]
 
-# ---------------- ANALYZE BUTTON ----------------
+# ---------------- ANALYZE ----------------
 
 if st.button("🛰 Analyze Planet"):
 
@@ -79,23 +81,14 @@ if st.button("🛰 Analyze Planet"):
 
     score = int(probability * 100)
 
-    # ---------------- HEADER ----------------
-
     st.header(f"🪐 {planet}")
+
+    # Planet Image
+
     if planet in planet_images:
-    st.image(
-        planet_images[planet],
-        width=500
-    )
-
-    # ---------------- METRICS ----------------
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "Habitability Score",
-            f"{score}%"
+        st.image(
+            planet_images[planet],
+            width=500
         )
 
     # Earth Similarity Index
@@ -108,15 +101,25 @@ if st.button("🛰 Analyze Planet"):
         )
     )
 
+    life_probability = int(
+        (score + esi * 100) / 2
+    )
+
+    # ---------------- METRICS ----------------
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "Habitability Score",
+            f"{score}%"
+        )
+
     with col2:
         st.metric(
             "🌍 Earth Similarity",
-            esi
+            f"{esi}"
         )
-
-    life_probability = int(
-        ((score + esi * 100) / 2)
-    )
 
     with col3:
         st.metric(
@@ -139,10 +142,10 @@ if st.button("🛰 Analyze Planet"):
     else:
 
         st.error(
-            "☄ Not Habitable"
+            "☄️ Not Habitable"
         )
 
-    # ---------------- PLANET DATA ----------------
+    # ---------------- PLANET FACTS ----------------
 
     st.subheader("📊 NASA Planet Facts")
 
@@ -175,86 +178,114 @@ if st.button("🛰 Analyze Planet"):
         st.write(
             f"🕒 Orbital Period: {period:.1f} Days"
         )
-        st.subheader("🌍 Comparison With Earth")
-        comparison = pd.DataFrame({
-    "Property":[
-        "Radius",
-        "Distance From Star",
-        "Orbital Period"
-    ],
-    "Earth":[
-        1.0,
-        1.0,
-        365
-    ],
-    planet:[
-        round(radius,2),
-        round(distance,2),
-        round(period,1)
-    ]
-})
 
-st.dataframe(
-    comparison,
-    use_container_width=True
-)
-st.subheader("📈 Planet Radius Comparison")
-fig, ax = plt.subplots()
+    # ---------------- EARTH COMPARISON ----------------
 
-ax.bar(
-    ["Earth", planet],
-    [1.0, radius]
-)
+    st.subheader("🌍 Comparison With Earth")
 
-ax.set_ylabel(
-    "Earth Radii"
-)
+    comparison = pd.DataFrame({
+        "Property": [
+            "Radius",
+            "Distance From Star",
+            "Orbital Period"
+        ],
+        "Earth": [
+            1.0,
+            1.0,
+            365
+        ],
+        planet: [
+            round(radius, 2),
+            round(distance, 2),
+            round(period, 1)
+        ]
+    })
 
-st.pyplot(fig)
-        
+    st.dataframe(
+        comparison,
+        use_container_width=True
+    )
 
-    # ---------------- HABITABILITY REASONS ----------------
+    # ---------------- CHART ----------------
+
+    st.subheader("📈 Planet Radius Comparison")
+
+    fig, ax = plt.subplots()
+
+    ax.bar(
+        ["Earth", planet],
+        [1.0, radius]
+    )
+
+    ax.set_ylabel(
+        "Earth Radii"
+    )
+
+    st.pyplot(fig)
+
+    # ---------------- HABITABLE ZONE ----------------
+
+    st.subheader("🌞 Habitable Zone Visualization")
+
+    fig2, ax2 = plt.subplots()
+
+    ax2.axvspan(
+        0.8,
+        1.5,
+        alpha=0.3,
+        label="Habitable Zone"
+    )
+
+    ax2.scatter(
+        distance,
+        1,
+        s=200,
+        label=planet
+    )
+
+    ax2.set_xlabel(
+        "Distance From Star (AU)"
+    )
+
+    ax2.set_yticks([])
+
+    ax2.legend()
+
+    st.pyplot(fig2)
+
+    # ---------------- ANALYSIS ----------------
 
     st.subheader("🔬 Habitability Analysis")
 
     if 0.8 <= distance <= 1.5:
-
         st.success(
-            "💧 Planet lies inside the Habitable Zone. Liquid water may exist."
+            "💧 Possible Liquid Water"
         )
-
     else:
-
         st.warning(
-            "💧 Distance from host star may reduce chances of liquid water."
+            "💧 Water Unlikely"
         )
 
     if radius <= 2:
-
         st.success(
-            "🌍 Planet is roughly Earth-sized."
+            "🌍 Earth-like Size"
         )
-
     else:
-
         st.warning(
-            "🌍 Planet is significantly larger than Earth."
+            "🌍 Larger than Earth"
         )
 
     if 4500 <= temp <= 6500:
-
         st.success(
-            "☀ Host star temperature is favorable."
+            "☀ Suitable Star Temperature"
         )
-
     else:
-
         st.warning(
-            "☀ Host star temperature may be extreme."
+            "☀ Extreme Star Temperature"
         )
 
     st.info(
-        "🌫 Atmospheric composition data unavailable."
+        "🌫 Atmosphere Data Unknown"
     )
 
     # ---------------- AI REPORT ----------------
@@ -265,32 +296,28 @@ st.pyplot(fig)
 
         st.success(
             f"""
-            {planet} is one of the strongest candidates
-            for habitability in the current dataset.
+{planet} is one of the strongest candidates for habitability.
 
-            The planet possesses Earth-like properties
-            and may support liquid water.
-            """
+The planet exhibits Earth-like properties and may support liquid water.
+"""
         )
 
     elif life_probability >= 50:
 
         st.info(
             f"""
-            {planet} exhibits several potentially
-            habitable characteristics.
+{planet} shows some promising characteristics for habitability.
 
-            Further atmospheric observations are required.
-            """
+Further observations are required.
+"""
         )
 
     else:
 
         st.warning(
             f"""
-            {planet} is unlikely to support life
-            due to environmental conditions.
-            """
+{planet} is unlikely to support life due to harsh environmental conditions.
+"""
         )
 
     # ---------------- LIFE FORMS ----------------
@@ -299,35 +326,27 @@ st.pyplot(fig)
 
     if life_probability >= 80:
 
-        st.success(
-            """
-            Possible Life Forms:
+        st.success("""
+🦠 Microbial Life
 
-            🦠 Microbial Life
+🌱 Primitive Plant Life
 
-            🌱 Primitive Plant Life
-
-            🐟 Aquatic Ecosystems
-            """
-        )
+🐟 Aquatic Ecosystems
+""")
 
     elif life_probability >= 50:
 
-        st.info(
-            """
-            Possible Life Forms:
-
-            🦠 Extremophile Microorganisms
-            """
-        )
+        st.info("""
+🦠 Extremophile Microorganisms
+""")
 
     else:
 
-        st.warning(
-            """
-            No known life forms are likely.
-            """
-        )
+        st.warning("""
+No known life forms are likely.
+""")
+
+# ---------------- FOOTER ----------------
 
 st.markdown("---")
 
