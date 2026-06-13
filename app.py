@@ -345,23 +345,25 @@ if st.button("🛰 INITIATE PLANET SCAN"):
 
     # ---------------- AI REPORT ----------------
 
-    report = f"""
-    TARGET: {planet}
-    
-    HOST STAR: {selected['hostname']}
-    
-    MISSION STATUS:
-    {'HABITABLE' if prediction == 1 else 'HOSTILE'}
-    
-    LIFE PROBABILITY:
-    {life_probability}%
-    
-    SCANNER RECOMMENDATION:
-    
-    {'Priority candidate for future exploration missions.' if prediction == 1 else 'Low-priority exploration target.'}
-    """
-        st.code(report)
+        # ---------------- AI REPORT ----------------
 
+    report = f"""
+TARGET: {planet}
+
+HOST STAR: {selected['hostname']}
+
+MISSION STATUS:
+{'HABITABLE' if prediction == 1 else 'HOSTILE'}
+
+LIFE PROBABILITY:
+{life_probability}%
+
+SCANNER RECOMMENDATION:
+
+{'Priority candidate for future exploration missions.' if prediction == 1 else 'Low-priority exploration target.'}
+"""
+
+    st.code(report)    
     # ---------------- LIFE FORMS ----------------
 
     st.subheader("👾 Hypothetical Life Forms")
