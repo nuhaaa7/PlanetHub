@@ -2,64 +2,116 @@ import streamlit as st
 import pandas as pd
 import joblib
 
-# ---------------- PAGE CONFIG ----------------
+# ---------------- PAGE SETTINGS ----------------
 
 st.set_page_config(
-    page_title="NASA Exoplanet Explorer",
+    page_title="NASA Exoplanet Intelligence System",
     page_icon="🚀",
-    layout="centered"
+    layout="wide"
 )
+
+# ---------------- CUSTOM STYLE ----------------
+
+st.markdown("""
+<style>
+
+.stApp {
+    background-color: #050816;
+    color: white;
+}
+
+h1,h2,h3 {
+    color: #4FC3F7;
+}
+
+</style>
+""", unsafe_allow_html=True)
 
 # ---------------- LOAD DATA ----------------
 
 model = joblib.load("model.pkl")
 
-df = pd.read_csv("planets.csv")
+df = pd.read_csv("nasa_clean.csv")
 
 # ---------------- TITLE ----------------
 
-st.title("🚀 NASA Exoplanet Habitability Explorer")
+st.title("🚀 NASA Exoplanet Intelligence System")
 
-st.markdown("""
-Explore known exoplanets and discover whether they may support life.
-""")
-
-# ---------------- PLANET SELECT ----------------
-
-planet = st.selectbox(
-    "🌌 Choose a Planet",
-    df["planet"]
+st.write(
+    "Analyze real exoplanets from NASA's Exoplanet Archive using Machine Learning."
 )
 
-selected = df[df["planet"] == planet].iloc[0]
+# ---------------- SEARCH ----------------
 
-radius = selected["radius"]
-temp = selected["temp"]
-distance = selected["distance"]
-period = selected["period"]
+planet_names = sorted(df["pl_name"].unique())
 
-# ---------------- BUTTON ----------------
+planet = st.selectbox(
+    "🔍 Search Planet",
+    planet_names
+)
 
-if st.button("🔍 Analyze Planet"):
+selected = df[df["pl_name"] == planet].iloc[0]
+
+radius = selected["pl_rade"]
+period = selected["pl_orbper"]
+distance = selected["pl_orbsmax"]
+temp = selected["st_teff"]
+
+# ---------------- ANALYZE BUTTON ----------------
+
+if st.button("🛰 Analyze Planet"):
 
     prediction = model.predict(
-        [[radius, period, temp, distance]]
+        [[radius, period, distance, temp]]
     )[0]
 
     probability = model.predict_proba(
-        [[radius, period, temp, distance]]
+        [[radius, period, distance, temp]]
     )[0][1]
 
     score = int(probability * 100)
 
+    # ---------------- HEADER ----------------
+
     st.header(f"🪐 {planet}")
 
-    st.metric(
-        "Habitability Score",
-        f"{score}%"
+    # ---------------- METRICS ----------------
+
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "Habitability Score",
+            f"{score}%"
+        )
+
+    # Earth Similarity Index
+
+    esi = max(
+        0,
+        round(
+            1 - abs(radius - 1) / 4,
+            2
+        )
     )
 
-    st.progress(score)
+    with col2:
+        st.metric(
+            "🌍 Earth Similarity",
+            esi
+        )
+
+    life_probability = int(
+        ((score + esi * 100) / 2)
+    )
+
+    with col3:
+        st.metric(
+            "👽 Life Probability",
+            f"{life_probability}%"
+        )
+
+    st.progress(life_probability)
 
     # ---------------- RESULT ----------------
 
@@ -74,106 +126,161 @@ if st.button("🔍 Analyze Planet"):
     else:
 
         st.error(
-            "☄️ Not Habitable"
+            "☄ Not Habitable"
         )
 
-    # ---------------- WHY SECTION ----------------
+    # ---------------- PLANET DATA ----------------
+
+    st.subheader("📊 NASA Planet Facts")
+
+    col1, col2 = st.columns(2)
+
+    with col1:
+
+        st.write(
+            f"⭐ Host Star: {selected['hostname']}"
+        )
+
+        st.write(
+            f"📅 Discovery Year: {selected['disc_year']}"
+        )
+
+        st.write(
+            f"🌍 Radius: {radius:.2f} Earth Radii"
+        )
+
+    with col2:
+
+        st.write(
+            f"🛰 Distance From Star: {distance:.2f} AU"
+        )
+
+        st.write(
+            f"☀ Star Temperature: {temp:.0f} K"
+        )
+
+        st.write(
+            f"🕒 Orbital Period: {period:.1f} Days"
+        )
+
+    # ---------------- HABITABILITY REASONS ----------------
 
     st.subheader("🔬 Habitability Analysis")
 
-    # Water
-
     if 0.8 <= distance <= 1.5:
+
         st.success(
-            "💧 Possible Liquid Water"
-        )
-    else:
-        st.warning(
-            "💧 Water Unlikely"
+            "💧 Planet lies inside the Habitable Zone. Liquid water may exist."
         )
 
-    # Planet Size
+    else:
+
+        st.warning(
+            "💧 Distance from host star may reduce chances of liquid water."
+        )
 
     if radius <= 2:
+
         st.success(
-            "🌍 Earth-like Size"
-        )
-    else:
-        st.warning(
-            "🌍 Larger than Earth"
+            "🌍 Planet is roughly Earth-sized."
         )
 
-    # Temperature
+    else:
+
+        st.warning(
+            "🌍 Planet is significantly larger than Earth."
+        )
 
     if 4500 <= temp <= 6500:
+
         st.success(
-            "☀ Suitable Star Temperature"
-        )
-    else:
-        st.warning(
-            "☀ Extreme Star Temperature"
+            "☀ Host star temperature is favorable."
         )
 
-    # Atmosphere
+    else:
+
+        st.warning(
+            "☀ Host star temperature may be extreme."
+        )
 
     st.info(
-        "🌫 Atmosphere Data Unknown"
+        "🌫 Atmospheric composition data unavailable."
     )
 
-    # Life Probability
+    # ---------------- AI REPORT ----------------
 
-    if score >= 80:
+    st.subheader("🧠 AI Planet Report")
+
+    if life_probability >= 80:
 
         st.success(
-            "👽 High Probability of Supporting Life"
+            f"""
+            {planet} is one of the strongest candidates
+            for habitability in the current dataset.
+
+            The planet possesses Earth-like properties
+            and may support liquid water.
+            """
         )
 
-    elif score >= 50:
+    elif life_probability >= 50:
 
         st.info(
-            "👽 Moderate Possibility of Life"
+            f"""
+            {planet} exhibits several potentially
+            habitable characteristics.
+
+            Further atmospheric observations are required.
+            """
         )
 
     else:
 
         st.warning(
-            "👽 Low Probability of Life"
+            f"""
+            {planet} is unlikely to support life
+            due to environmental conditions.
+            """
         )
 
-    # Planet Facts
+    # ---------------- LIFE FORMS ----------------
 
-    st.subheader("📊 Planet Facts")
+    st.subheader("👾 Hypothetical Life Forms")
 
-    st.write(f"**Radius:** {radius} Earth Radii")
-    st.write(f"**Star Temperature:** {temp} K")
-    st.write(f"**Distance From Star:** {distance} AU")
-    st.write(f"**Orbital Period:** {period} Days")
+    if life_probability >= 80:
 
-    # Summary
+        st.success(
+            """
+            Possible Life Forms:
 
-    st.subheader("📝 AI Summary")
+            🦠 Microbial Life
 
-    if prediction == 1:
+            🌱 Primitive Plant Life
 
-        st.write(
-            f"""
-            {planet} appears to have several characteristics
-            associated with potentially habitable planets.
-            
-            The planet is located near the habitable zone,
-            may support liquid water, and has an Earth-like size.
+            🐟 Aquatic Ecosystems
+            """
+        )
+
+    elif life_probability >= 50:
+
+        st.info(
+            """
+            Possible Life Forms:
+
+            🦠 Extremophile Microorganisms
             """
         )
 
     else:
 
-        st.write(
-            f"""
-            {planet} has characteristics that make
-            habitability less likely.
-            
-            Factors such as temperature, size,
-            or orbital distance may reduce the chance
-            of supporting life.
+        st.warning(
+            """
+            No known life forms are likely.
             """
         )
+
+st.markdown("---")
+
+st.caption(
+    "Powered by Machine Learning and NASA Exoplanet Archive Data 🚀"
+)
